@@ -14,9 +14,9 @@ service, and provides a conversational CLI powered by DeepSeek (tool calling).
 - **Builds Redis indexes** (`ZSET` for time + `SETs` for filters)
 - **Exposes a local API**: `GET /reports/search`
 - **Enables natural-language questions** (Spanish) via DeepSeek:
-  - “Dame los bloqueos de hoy para www.never8.com”
-  - “Hoy de 5pm a 6pm, bloqueos en www.never8.com”
-  - “Top 10 IPs bloqueadas ayer en magento.never8.com”
+  - “Dame los bloqueos de hoy para www.example.com”
+  - “Hoy de 5pm a 6pm, bloqueos en www.example.com”
+  - “Top 10 IPs bloqueadas ayer en www.example.com”
 
 ---
 
@@ -118,10 +118,10 @@ Type `exit` to quit.
 
 ## Example queries (natural language)
 
-- `Dame los bloqueos de hoy para www.never8.com`
-- `Hoy de 5pm a 6pm, dame los bloqueos en www.never8.com`
-- `Hoy de 9am a 6pm, dame los bloqueos en www.salterra.com.mx`
-- `Top 10 IPs bloqueadas ayer en magento.never8.com`
+- `Dame los bloqueos de hoy para www.example.com`
+- `Hoy de 5pm a 6pm, dame los bloqueos en www.example.com`
+- `Hoy de 9am a 6pm, dame los bloqueos en www.example.com`
+- `Top 10 IPs bloqueadas ayer en www.example.com`
 - `Busca intentos a /wp-login.php hoy y muestra 5 ejemplos`
 
 ---
@@ -138,7 +138,7 @@ curl -sS "http://127.0.0.1:8811/reports/search?start=2026-01-01T00:00:00-06:00&e
 ### With filters
 
 ```bash
-curl -sS "http://127.0.0.1:8811/reports/search?start=2026-01-01T00:00:00-06:00&end=2026-01-02T00:00:00-06:00&server_name=magento.never8.com&security_mode=block&limit=5" \
+curl -sS "http://127.0.0.1:8811/reports/search?start=2026-01-01T00:00:00-06:00&end=2026-01-02T00:00:00-06:00&server_name=www.example.com&security_mode=block&limit=5" \
 | python -m json.tool
 ```
 
