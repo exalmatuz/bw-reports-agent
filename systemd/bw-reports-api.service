@@ -1,0 +1,15 @@
+[Unit]
+Description=BunkerWeb Reports Search API
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/bw-reports-agent
+EnvironmentFile=/opt/bw-reports-agent/.env
+ExecStart=/opt/bw-reports-agent/venv/bin/uvicorn bw_api:app --host 127.0.0.1 --port 8811
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+

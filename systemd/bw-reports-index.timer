@@ -1,0 +1,11 @@
+[Unit]
+Description=Run BunkerWeb indexer every 5 minutes
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=5min
+Unit=bw-reports-index.service
+
+[Install]
+WantedBy=timers.target
+

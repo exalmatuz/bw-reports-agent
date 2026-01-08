@@ -1,0 +1,9 @@
+[Unit]
+Description=Index BunkerWeb requests into Redis indexes
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/bw-reports-agent
+EnvironmentFile=/opt/bw-reports-agent/.env
+ExecStart=/opt/bw-reports-agent/venv/bin/python -u /opt/bw-reports-agent/bw_indexer.py --ttl_days 60
+
