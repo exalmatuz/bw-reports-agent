@@ -1,26 +1,26 @@
 # BunkerWeb Reports Agent (Redis Indexer + FastAPI + DeepSeek Chat)
 
-Este proyecto agrega capacidades avanzadas de búsqueda y filtrado sobre los *reports/events* de BunkerWeb almacenados en Redis.
-Construye índices en Redis para consultas rápidas (por rango de tiempo, `server_name`, `ip`, `reason`, etc.), expone una API local
-con FastAPI y habilita un modo conversacional (CLI) usando DeepSeek (*tool calling*).
+This project adds advanced search and filtering capabilities over BunkerWeb *reports/events* stored in Redis.
+It builds Redis indexes for fast queries (time range, `server_name`, `ip`, `reason`, etc.), exposes a local FastAPI
+service, and provides a conversational CLI powered by DeepSeek (tool calling).
 
-> ✅ Ideal para SecOps/Infra cuando la UI de BunkerWeb no permite filtros por fecha/hora u otros criterios.
-
----
-
-## ¿Qué hace?
-
-- **Indexa** los eventos de BunkerWeb desde Redis (`LIST requests`)
-- **Crea índices** en Redis (`ZSET` por tiempo + `SETs` por filtros)
-- **Expone una API local**: `GET /reports/search`
-- **Permite preguntas naturales** en español con DeepSeek:
-  - “Dame los bloqueos de hoy para www.example.com”
-  - “Hoy de 5pm a 6pm, bloqueos en www.example.com”
-  - “Top 10 IPs bloqueadas ayer en www.example.com”
+> ✅ Ideal for SecOps/Infra teams when the BunkerWeb UI doesn’t provide date/time filters or other needed criteria.
 
 ---
 
-## Estructura del repositorio
+## What it does
+
+- **Indexes** BunkerWeb events from Redis (`LIST requests`)
+- **Builds Redis indexes** (`ZSET` for time + `SETs` for filters)
+- **Exposes a local API**: `GET /reports/search`
+- **Enables natural-language questions** (Spanish) via DeepSeek:
+  - “Dame los bloqueos de hoy para www.never8.com”
+  - “Hoy de 5pm a 6pm, bloqueos en www.never8.com”
+  - “Top 10 IPs bloqueadas ayer en magento.never8.com”
+
+---
+
+## Repository layout
 
 ```
 bw-reports-agent/
@@ -41,18 +41,18 @@ bw-reports-agent/
 
 ---
 
-## Requisitos
+## Requirements
 
 - Python 3.9+
-- Redis accesible desde el host
-- BunkerWeb escribiendo eventos en Redis: `LIST requests`
-- API Key de DeepSeek (solo para el chat)
+- Redis reachable from the host
+- BunkerWeb writing events into Redis: `LIST requests`
+- DeepSeek API key (chat only)
 
 ---
 
-## Instalación
+## Installation
 
-### 1) Crear venv e instalar dependencias
+### 1) Create a venv and install dependencies
 
 ```bash
 python3 -m venv venv
@@ -60,39 +60,39 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2) Configurar variables de entorno
+### 2) Configure environment variables
 
 ```bash
 cp .env.example .env
-# Edita .env y configura DEEPSEEK_API_KEY
+# Edit .env and set DEEPSEEK_API_KEY
 chmod 600 .env
 ```
 
-> ⚠️ Nunca subas `.env` al repositorio público.
+> ⚠️ Never commit `.env` to a public repository.
 
 ---
 
-## Ejecución (manual)
+## Run (manual)
 
-### 1) Indexar eventos en Redis
+### 1) Index events in Redis
 
-Esto construye/actualiza el índice para búsquedas rápidas:
+This builds/refreshes the indexes used for fast searches:
 
 ```bash
 source venv/bin/activate
 python -u src/bw_indexer.py --ttl_days 60
 ```
 
-### 2) Levantar la API local (FastAPI)
+### 2) Start the local API (FastAPI)
 
-Opción A (recomendada desde el root del repo):
+Option A (recommended from the repo root):
 
 ```bash
 source venv/bin/activate
 uvicorn bw_api:app --app-dir src --host 127.0.0.1 --port 8811
 ```
 
-Opción B (si ejecutas desde `src/`):
+Option B (if you run from `src/`):
 
 ```bash
 cd src
@@ -105,54 +105,54 @@ Healthcheck:
 curl -sS http://127.0.0.1:8811/health
 ```
 
-### 3) Ejecutar chat conversacional (DeepSeek)
+### 3) Start the conversational chat (DeepSeek)
 
 ```bash
 source venv/bin/activate
 python src/bw_chat.py
 ```
 
-Escribe `exit` para salir.
+Type `exit` to quit.
 
 ---
 
-## Ejemplos de preguntas (Spanish / natural language)
+## Example queries (natural language)
 
-- `Dame los bloqueos de hoy para www.example.com`
-- `Hoy de 5pm a 6pm, dame los bloqueos en www.example.com`
-- `Hoy de 9am a 6pm, dame los bloqueos en www.example.com`
-- `Top 10 IPs bloqueadas ayer en www.example.com`
+- `Dame los bloqueos de hoy para www.never8.com`
+- `Hoy de 5pm a 6pm, dame los bloqueos en www.never8.com`
+- `Hoy de 9am a 6pm, dame los bloqueos en www.salterra.com.mx`
+- `Top 10 IPs bloqueadas ayer en magento.never8.com`
 - `Busca intentos a /wp-login.php hoy y muestra 5 ejemplos`
 
 ---
 
-## Uso de la API (ejemplos)
+## API usage (examples)
 
-### Solo por rango de tiempo
+### Time range only
 
 ```bash
 curl -sS "http://127.0.0.1:8811/reports/search?start=2026-01-01T00:00:00-06:00&end=2026-01-02T00:00:00-06:00&limit=5" \
 | python -m json.tool
 ```
 
-### Con filtros
+### With filters
 
 ```bash
-curl -sS "http://127.0.0.1:8811/reports/search?start=2026-01-01T00:00:00-06:00&end=2026-01-02T00:00:00-06:00&server_name=www.example.com&security_mode=block&limit=5" \
+curl -sS "http://127.0.0.1:8811/reports/search?start=2026-01-01T00:00:00-06:00&end=2026-01-02T00:00:00-06:00&server_name=magento.never8.com&security_mode=block&limit=5" \
 | python -m json.tool
 ```
 
 ---
 
-## Claves de Redis (resumen)
+## Redis keys (summary)
 
-**Origen (BunkerWeb):**
-- `requests` (LIST) -> JSON por evento
+**Source (BunkerWeb):**
+- `requests` (LIST) -> one JSON per event
 
-**Índice (por defecto prefijo `bw_idx`):**
+**Index (default prefix: `bw_idx`):**
 - `bw_idx:requests:by_date` (ZSET) -> member=`id`, score=`date epoch`
-- `bw_idx:req:<id>` (STRING) -> JSON completo por id
-- `bw_idx:seen:<id>` (STRING) -> deduplicación (SET NX)
+- `bw_idx:req:<id>` (STRING) -> full JSON by id
+- `bw_idx:seen:<id>` (STRING) -> dedup marker (SET NX)
 - `bw_idx:server:<server_name>` (SET) -> ids
 - `bw_idx:ip:<ip>` (SET) -> ids
 - `bw_idx:mode:<security_mode>` (SET) -> ids
@@ -163,14 +163,14 @@ curl -sS "http://127.0.0.1:8811/reports/search?start=2026-01-01T00:00:00-06:00&e
 
 ---
 
-## systemd (producción)
+## systemd (production)
 
-Los unit files sugeridos están en `systemd/`:
+Suggested unit files live under `systemd/`:
 
-- `bw-reports-api.service` (API siempre arriba)
-- `bw-reports-index.service` + `bw-reports-index.timer` (reindexado periódico)
+- `bw-reports-api.service` (API always on)
+- `bw-reports-index.service` + `bw-reports-index.timer` (periodic re-indexing)
 
-Ejemplo de instalación:
+Example install:
 
 ```bash
 sudo cp systemd/bw-reports-api.service /etc/systemd/system/
@@ -182,7 +182,7 @@ sudo systemctl enable --now bw-reports-api
 sudo systemctl enable --now bw-reports-index.timer
 ```
 
-Ver estado:
+Check status:
 
 ```bash
 systemctl status bw-reports-api --no-pager
@@ -191,18 +191,18 @@ systemctl list-timers --all | grep bw-reports-index
 
 ---
 
-## Seguridad
+## Security
 
-- Mantén la API ligada a `127.0.0.1` (no la expongas públicamente).
-- No subas `.env` ni tokens/API keys.
-- Rota cualquier key expuesta.
-- Usa permisos `chmod 600 .env`.
+- Keep the API bound to `127.0.0.1` (do not expose it publicly).
+- Never commit `.env` or any API keys/tokens.
+- Rotate any key that was exposed.
+- Use strict perms: `chmod 600 .env`.
 
 ---
 
 ## Troubleshooting
 
-### La API no levanta
+### API won’t start
 
 ```bash
 systemctl status bw-reports-api --no-pager
@@ -210,15 +210,15 @@ journalctl -u bw-reports-api -n 200 --no-pager
 ss -ltnp | grep :8811 || true
 ```
 
-### La API responde pero `count=0`
+### API responds but `count=0`
 
-Verifica índice:
+Verify indexes:
 
 ```bash
 redis-cli -h 127.0.0.1 -p 6379 -n 0 ZCARD bw_idx:requests:by_date
 ```
 
-Si es 0, ejecuta indexador:
+If it’s 0, run the indexer:
 
 ```bash
 source venv/bin/activate
@@ -227,7 +227,7 @@ python -u src/bw_indexer.py --ttl_days 60
 
 ---
 
-## Licencia
+## License
 
-Ver `LICENSE`.
+See `LICENSE`.
 
